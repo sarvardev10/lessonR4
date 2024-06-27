@@ -1,2 +1,3 @@
 import SignUpModal from "./sign-up-modal";
-export { SignUpModal };
+import ForgetModal from "./forget-modal";
+export { SignUpModal, ForgetModal };
