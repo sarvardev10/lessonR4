@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const http = axios.create({
-  baseURL: "https://app.olimjanov.uz/v1",
+  baseURL: "https://service.olimjanov.uz/v1/swagger/index.html",
 });
 
 http.interceptors.request.use((config) => {
