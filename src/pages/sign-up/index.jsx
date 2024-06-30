@@ -12,7 +12,7 @@ import { Notification } from "../../utils/index";
 import { auth } from "../../service/";
 import { VerifyModal } from "../../components/modal";
 import { useMask } from "@react-input/mask";
-import {signUpValidationSchema} from "../../utils/validation"
+import { signUpValidationSchema } from "../../utils/validation";
 
 const Index = () => {
   const initialValues = {
@@ -29,12 +29,17 @@ const Index = () => {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const handleSubmit = async (values) => {
     try {
       const phone_number = values.phone_number.replace(/\D/g, "");
       const payload = { ...values, phone_number: `+${phone_number}` };
+      console.log("Payload to send:", payload); // Added logging for debugging
+
       const response = await auth.sign_up(payload);
-      response.status === 200 && setOpen(true);
+
+      console.log("Response received:", response); // Added logging for debugging
+
       if (response.status === 200) {
         Notification({
           title: response.data.message,
@@ -42,20 +47,27 @@ const Index = () => {
         });
         setOpen(true);
         setEmail(values.email);
+      } else {
+        Notification({
+          title: "Sign Up Failed",
+          type: "error",
+        });
+        console.error("Sign up failed with status:", response.status); // Added logging for debugging
       }
     } catch (error) {
-      console.error(error);
+      console.error("Sign up error:", error.response ? error.response.data : error); // Improved error logging
       Notification({
         title: "Sign Up Failed",
         type: "error",
       });
     }
   };
+
   useEffect(() => {
     if (localStorage.getItem("access_token")) {
       navigate("/");
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <>
@@ -162,7 +174,7 @@ const Index = () => {
                 </Button>
                 <span
                   onClick={() => navigate("/sign-in")}
-                  className=" text-blue-300 cursor-pointer hover:text-blue-500"
+                  className="text-blue-300 cursor-pointer hover:text-blue-500"
                 >
                   Already have an account?
                 </span>
