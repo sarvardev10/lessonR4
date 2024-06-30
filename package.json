@@ -1,5 +1,5 @@
 {
-  "name": "lesson-4",
+  "name": "ideal_cleaning",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,13 +12,15 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
-    "@react-spring/web": "^9.7.3",
-    "and": "^0.0.3",
+    "@react-input/mask": "^1.2.5",
     "axios": "^1.7.2",
     "formik": "^2.4.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-input-mask": "^2.0.4",
+    "react-notifications": "^1.7.4",
     "react-router-dom": "^6.23.1",
     "react-toastify": "^10.0.5",
     "yup": "^1.4.0"

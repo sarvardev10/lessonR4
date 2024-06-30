@@ -1,3 +1,5 @@
-import SignUpModal from "./sign-up-modal";
-import ForgetModal from "./forget-modal";
-export { SignUpModal, ForgetModal };
+import LogOutModal from "./logout"
+import VerifyModal from "./verify"
+import SignInModal from "./signin"
+
+export { LogOutModal, VerifyModal, SignInModal }

@@ -1,107 +1,133 @@
-import React from "react";
-import { Button, TextField } from "@mui/material";
-import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { auth } from "@service";
-import { ForgetModal } from "@modal";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-
-const validationSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Please fill the field"),
-  password: Yup.string().required("Required"),
-});
+import {
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { auth } from "../../service/index";
+import { Notification } from "../../utils/index";
+import {signInValidationSchema} from "../../utils/validation"
+import {SignInModal} from "../../components/modal"
 
 const Index = () => {
-  const [open, setOpen] = React.useState(false);
-
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const initialValues = {
+    email: "",
+    password: "",
+  };
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const handleSubmit = async (values) => {
     try {
       const response = await auth.sign_in(values);
       if (response.status === 200) {
-        localStorage.setItem("access_token", response?.data.access_token);
-        toast.success("Successfully logged in!");
-      } else {
-        toast.error("Access denied. Please check your credentials.");
+          navigate("/");
+        localStorage.setItem("access_token", response.data.access_token);
+        Notification({
+          title: "Sign In Successfuly",
+          type: "success",
+        });
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Failed to log in. Please try again later.");
-    } finally {
-      setSubmitting(false);
+      console.error(error);
+      Notification({
+        title: "Sign In Failed",
+        type: "error",
+      })
     }
   };
+  useEffect(() => {
+    if (localStorage.getItem("access_token")) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <>
-      <ForgetModal open={open} handleClose={() => setOpen(false)} />
-      <ToastContainer />
-
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="w-full sm:w-[600px] p-5">
-          <h1 className="text-center my-6 text-[50px]">Login</h1>
-          <Formik
-            initialValues={{ email: "", password: "" }}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ isSubmitting, touched, errors }) => (
-              <Form className="flex flex-col gap-3">
+      <SignInModal open={open}/>
+      <div className="h-screen flex-col flex items-center justify-center p-5">
+        <h1 className="text-[35px] font-normal sm:text-[36px] md:text-[56px]">
+          Login
+        </h1>
+        <div className="max-w-[600px]">
+          <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={signInValidationSchema}>
+            {({ isSubmitting }) => (
+              <Form>
                 <Field
-                  as={TextField}
-                  fullWidth
-                  type="email"
-                  label="Email"
-                  id="email"
                   name="email"
-                  variant="outlined"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={<ErrorMessage name="email" />}
-                />
-
-                <Field
+                  type="email"
                   as={TextField}
+                  label="Email address"
                   fullWidth
-                  type="password"
-                  label="Password"
-                  id="password"
-                  name="password"
+                  margin="normal"
                   variant="outlined"
-                  error={touched.password && Boolean(errors.password)}
-                  helperText={<ErrorMessage name="password" />}
+                  helperText={
+                    <ErrorMessage
+                      name="email"
+                      component="span"
+                      className="text-[red] text-[15px]"
+                    />
+                  }
                 />
-
-                <Button
-                  variant="contained"
+                <Field
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  as={TextField}
+                  label="Password"
                   fullWidth
-                  type="submit"
-                  disabled={isSubmitting}
+                  margin="normal"
+                  variant="outlined"
+                  helperText={
+                    <ErrorMessage
+                      name="password"
+                      component="span"
+                      className="text-[red] text-[15px]"
+                    />
+                  }
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <p
+                  className="mb-3 cursor-pointer hover:text-blue-500"
+                  onClick={() => setOpen(true)}
                 >
-                  {isSubmitting ? "Signing In..." : "Sign In"}
+                  Parolni unutdingizmi?
+                </p>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  disabled={isSubmitting}
+                  sx={{ marginBottom: "8px" }}
+                >
+                  {isSubmitting ? "Signing" : "Sign In"}
                 </Button>
+                <span
+                  onClick={() => navigate("/sign-up")}
+                  className=" text-blue-300 cursor-pointer hover:text-blue-500"
+                >
+                  Registration
+                </span>
               </Form>
             )}
           </Formik>
-
-          <div className="text-center mt-4">
-            <Link to="/sign-up">
-              <Button variant="text" color="primary">
-                Register Here
-              </Button>
-            </Link>
-          </div>
-          <div className="text-center mt-4">
-            <Button
-              variant="text"
-              color="primary"
-              onClick={() => setOpen(true)}
-            >
-              Forgot password
-            </Button>
-          </div>
         </div>
       </div>
     </>

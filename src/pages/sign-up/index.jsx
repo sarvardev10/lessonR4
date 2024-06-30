@@ -1,108 +1,171 @@
-import React, { useState } from "react";
-import { Button, TextField } from "@mui/material";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { SignUpModal } from "@modal";
-
-// Mock auth service for testing
-const auth = {
-  sign_up: async (values) => {
-    console.log("Submitted values:", values);
-    // Simulate a successful registration response
-    return { status: 200 };
-  },
-};
-
-const validationSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email address").required("Required"),
-  full_name: Yup.string().required("Required"),
-  password: Yup.string().required("Required"),
-  phone_number: Yup.string().required("Required"), // No specific validation for phone number format
-});
+import {
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Notification } from "../../utils/index";
+import { auth } from "../../service/";
+import { VerifyModal } from "../../components/modal";
+import { useMask } from "@react-input/mask";
+import {signUpValidationSchema} from "../../utils/validation"
 
 const Index = () => {
+  const initialValues = {
+    full_name: "",
+    email: "",
+    password: "",
+    phone_number: "",
+  };
+  const inputRef = useMask({
+    mask: "+998 (__) ___-__-__",
+    replacement: { _: /\d/ },
+  });
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const handleSubmit = async (values) => {
     try {
-      const response = await auth.sign_up(values);
+      const phone_number = values.phone_number.replace(/\D/g, "");
+      const payload = { ...values, phone_number: `+${phone_number}` };
+      const response = await auth.sign_up(payload);
+      response.status === 200 && setOpen(true);
       if (response.status === 200) {
+        Notification({
+          title: response.data.message,
+          type: "success",
+        });
         setOpen(true);
-        toast.success("Successfully registered!");
-      } else {
-        toast.error("Failed to register. Please try again later.");
+        setEmail(values.email);
       }
     } catch (error) {
-      console.log("Registration error:", error);
-      toast.error("Failed to register. Please try again later.");
-    } finally {
-      setSubmitting(false);
+      console.error(error);
+      Notification({
+        title: "Sign Up Failed",
+        type: "error",
+      });
     }
   };
+  useEffect(() => {
+    if (localStorage.getItem("access_token")) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <>
-      <SignUpModal open={open} handleClose={() => setOpen(false)} />
-      <ToastContainer />
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="w-full sm:w-[600px] p-5">
-          <h1 className="text-center my-6 text-[50px]">Register</h1>
-          <Formik
-            initialValues={{ email: "", full_name: "", password: "", phone_number: "" }}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ isSubmitting, touched, errors }) => (
-              <Form className="flex flex-col gap-3">
+      <VerifyModal
+        open={open}
+        setOpen={setOpen}
+        email={email}
+        closeModal={() => setOpen(false)}
+      />
+      <div className="h-screen flex-col flex items-center justify-center gap-5 p-5">
+        <h1 className="text-[35px] font-normal sm:text-[36px] md:text-[56px]">
+          Register
+        </h1>
+        <div className="max-w-[600px]">
+          <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={signUpValidationSchema}>
+            {({ isSubmitting }) => (
+              <Form>
                 <Field
-                  as={TextField}
-                  fullWidth
-                  type="email"
-                  label="Email"
-                  id="email"
-                  name="email"
-                  variant="outlined"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={<ErrorMessage name="email" />}
-                />
-                <Field
-                  as={TextField}
-                  fullWidth
-                  type="text"
-                  label="Full Name"
-                  id="full_name"
                   name="full_name"
-                  variant="outlined"
-                  error={touched.full_name && Boolean(errors.full_name)}
-                  helperText={<ErrorMessage name="full_name" />}
-                />
-                <Field
-                  as={TextField}
-                  fullWidth
-                  type="password"
-                  label="Password"
-                  id="password"
-                  name="password"
-                  variant="outlined"
-                  error={touched.password && Boolean(errors.password)}
-                  helperText={<ErrorMessage name="password" />}
-                />
-                <Field
-                  as={TextField}
-                  fullWidth
                   type="text"
-                  label="Phone"
-                  id="phone_number"
-                  name="phone_number"
+                  as={TextField}
+                  label="Full Name"
+                  fullWidth
+                  margin="normal"
                   variant="outlined"
-                  error={touched.phone_number && Boolean(errors.phone_number)}
-                  helperText={<ErrorMessage name="phone_number" />}
+                  helperText={
+                    <ErrorMessage
+                      name="full_name"
+                      component="span"
+                      className="text-[red] text-[15px]"
+                    />
+                  }
                 />
-                <Button variant="contained" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Registering..." : "Sign Up"}
+                <Field
+                  name="phone_number"
+                  type="tel"
+                  as={TextField}
+                  label="Phone number"
+                  fullWidth
+                  margin="normal"
+                  inputRef={inputRef}
+                  variant="outlined"
+                  helperText={
+                    <ErrorMessage
+                      name="phone_number"
+                      component="span"
+                      className="text-[red] text-[15px]"
+                    />
+                  }
+                />
+                <Field
+                  name="email"
+                  type="email"
+                  as={TextField}
+                  label="Email address"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  helperText={
+                    <ErrorMessage
+                      name="email"
+                      component="span"
+                      className="text-[red] text-[15px]"
+                    />
+                  }
+                />
+                <Field
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  as={TextField}
+                  label="Password"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  helperText={
+                    <ErrorMessage
+                      name="password"
+                      component="span"
+                      className="text-[red] text-[15px]"
+                    />
+                  }
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  disabled={isSubmitting}
+                  sx={{ marginBottom: "8px" }}
+                >
+                  {isSubmitting ? "Yuborilmoqda..." : "Sign Up"}
                 </Button>
+                <span
+                  onClick={() => navigate("/sign-in")}
+                  className=" text-blue-300 cursor-pointer hover:text-blue-500"
+                >
+                  Already have an account?
+                </span>
               </Form>
             )}
           </Formik>

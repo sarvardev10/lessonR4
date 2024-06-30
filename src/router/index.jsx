@@ -5,17 +5,20 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 import App from "../App";
-import { SignUp, SignIn } from "@pages";
+import { SignIn, SignUp, Main, Service, Home } from "@pages";
 const Index = () => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<App />}>
-        <Route index element={<SignIn />} />
-        <Route path="sign-up" element={<SignUp />} />
+        <Route path="/" element={<Main />}>
+          <Route index element={<Home />} />
+          <Route path="/Service" element={<Service />} />
+        </Route>
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
       </Route>
     )
   );
   return <RouterProvider router={router} />;
 };
-
 export default Index;
