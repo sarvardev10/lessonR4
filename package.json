@@ -22,6 +22,7 @@
     "react-input-mask": "^2.0.4",
     "react-notifications": "^1.7.4",
     "react-router-dom": "^6.23.1",
+    "react-spring": "^9.7.3",
     "react-toastify": "^10.0.5",
     "yup": "^1.4.0"
   },
