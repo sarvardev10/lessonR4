@@ -20,16 +20,29 @@ const Fade = ({ children, in: open }) => {
   return <div style={style}>{open ? children : null}</div>;
 };
 
+// eslint-disable-next-line react/prop-types
 const Index = ({ open, handleClose, item }) => {
   console.log(item, "item");
   const initialValues = {
+    // eslint-disable-next-line react/prop-types
     name: item?.name ? item?.name : "",
+    // eslint-disable-next-line react/prop-types
     price: item?.price ? item?.price : "",
   };
 
   const handleSubmit = async (values) => {
     if (item) {
-      alert();
+      // eslint-disable-next-line react/prop-types
+      const payload = { id: item.id, ...values };
+      try {
+        const response = await service.update(payload);
+        if (response.status === 200) {
+          window.location.reload();
+        }
+        handleClose();
+      } catch (error) {
+        console.log(error);
+      }
     } else {
       try {
         const response = await service.create(values);
