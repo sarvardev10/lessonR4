@@ -27,7 +27,7 @@ const Index = () => {
         <div className=" flex justify-end">
           <Button
             variant=" contained"
-            type="primary"
+            color="primary"
             onClick={() => setOpen(true)}
           >
             Add

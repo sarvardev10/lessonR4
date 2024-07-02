@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import {
   Modal,
   Backdrop,
@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { serviceValidationSchema } from "../../../utils/validation";
-import { service } from "@service";
+import service from "../../../service/service";
 
 const Fade = ({ children, in: open }) => {
   const style = {
@@ -20,21 +20,26 @@ const Fade = ({ children, in: open }) => {
   return <div style={style}>{open ? children : null}</div>;
 };
 
-const Index = ({ open, handleClose }) => {
+const Index = ({ open, handleClose, item }) => {
+  console.log(item, "item");
   const initialValues = {
-    name: "",
-    price: "",
+    name: item?.name ? item?.name : "",
+    price: item?.price ? item?.price : "",
   };
 
   const handleSubmit = async (values) => {
-    try {
-      // Assuming service.create expects an object like { name: "", price: "" }
-      const response = await service.create(values);
-      console.log("Service created:", response);
-      handleClose(); // Close modal on successful submission
-    } catch (error) {
-      console.error("Error creating service:", error);
-      // Handle error, show message to user, etc.
+    if (item) {
+      alert();
+    } else {
+      try {
+        const response = await service.create(values);
+        if (response.status === 201) {
+          window.location.reload();
+        }
+        handleClose();
+      } catch (error) {
+        console.error("Error creating service:", error);
+      }
     }
   };
 
