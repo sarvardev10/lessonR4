@@ -9,9 +9,9 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { Order } from "@modal";
-import { useState } from "react";
 import { order } from "../../../service";
+import { EditOrder } from "../../modal";
+import { useState } from "react";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "rgba(35,137,218,1)",
@@ -32,7 +32,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 export default function CustomizedTables({ data }) {
-  const [edit, setEdit] = useState({});
   const [open, setOpen] = useState(false);
   const deleteItem = async (id) => {
     try {
@@ -42,13 +41,10 @@ export default function CustomizedTables({ data }) {
       console.log(error);
     }
   };
-  const editItem = (item) => {
-    setEdit(item);
-    setOpen(true);
-  };
+
   return (
     <>
-      <Order item={edit} open={open} handleClose={() => setOpen(false)} />
+      <EditOrder open={open} handleClose={() => setOpen(false)} />
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 700 }} aria-label="customized table">
           <TableHead>
@@ -84,7 +80,7 @@ export default function CustomizedTables({ data }) {
                 <StyledTableCell align="center">{item.status}</StyledTableCell>
                 <StyledTableCell align="center">
                   <div align="center" className="flex gap-3 justify-center">
-                    <button onClick={() => editItem(item)}>
+                    <button onClick={() => setOpen(true)}>
                       <EditIcon />
                     </button>
                     <button onClick={() => deleteItem(item.id)}>

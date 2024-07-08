@@ -23,15 +23,15 @@ const Fade = ({ children, in: open }) => {
 
   return <div style={style}>{open ? children : null}</div>;
 };
-// eslint-disable-next-line react/prop-types
+
 const Index = ({ open, handleClose, item }) => {
-  console.log(item, "item"); // Log item to check its content
+  console.log(item, "item");
   const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await service.get();
+        const response = await service.get({ page: 1, limit: 10 });
         if (response.status === 200 && response.data?.services) {
           setData(response.data.services);
         }
@@ -42,43 +42,31 @@ const Index = ({ open, handleClose, item }) => {
     fetchData();
   }, []);
 
-  // Set initial values based on whether editing an existing item or creating a new one
-  const initialValues = item
-    ? {
-        client_full_name: item.client_full_name || "",
-        client_phone_number: item.client_phone_number || "",
-        amount: item.amount || "",
-        service_id: item.service_id || "",
-      }
-    : {
-        client_full_name: "",
-        client_phone_number: "",
-        amount: "",
-        service_id: "",
-      };
+  const initialValues = {
+    client_full_name: item?.client_full_name || "",
+    client_phone_number: item?.client_phone_number || "",
+    amount: item?.amount || "",
+    service_id: item?.service_id || "",
+  };
 
-  console.log("initialValues:", initialValues); // Log initialValues for debugging
-
-  const handleSubmit = async (values) => {
-    if (item) {// eslint-disable-next-line react/prop-types
-      const payload = { id: item.id, ...values };
-      try {
+  const handleSubmit = async (values, { setSubmitting }) => {
+    try {
+      if (item) {
+        const payload = { id: item.id, ...values };
         const response = await order.update(payload);
         if (response.status === 201) {
           window.location.reload();
         }
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      try {
+      } else {
         const response = await order.create(values);
         if (response.status === 201) {
           window.location.reload();
         }
-      } catch (error) {
-        console.log(error);
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -120,7 +108,7 @@ const Index = ({ open, handleClose, item }) => {
                   name="client_full_name"
                   type="text"
                   as={TextField}
-                  label="Name"
+                  label="Full name"
                   fullWidth
                   margin="normal"
                   variant="outlined"
@@ -171,22 +159,11 @@ const Index = ({ open, handleClose, item }) => {
                   margin="normal"
                   variant="outlined"
                   displayEmpty
-                  inputProps={{
-                    name: "service_id",
-                    id: "service_id",
-                  }}
-                  helperText={
-                    <ErrorMessage
-                      name="service_id"
-                      component="p"
-                      className="text-[red] text-[15px]"
-                    />
-                  }
                 >
                   <MenuItem value="" disabled>
                     Select a service
                   </MenuItem>
-                  {data.map((item, index) => (// eslint-disable-next-line react/prop-types
+                  {data.map((item, index) => (
                     <MenuItem key={index} value={item.id}>
                       {item.name}
                     </MenuItem>

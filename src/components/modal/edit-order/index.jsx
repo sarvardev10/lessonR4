@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import {
   Modal,
   Backdrop,
@@ -8,8 +8,7 @@ import {
   TextField,
 } from "@mui/material";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { serviceValidationSchema } from "../../../utils/validation";
-import service from "../../../service/service";
+import { orderValidationSchema } from "../../../utils/validation";
 
 const Fade = ({ children, in: open }) => {
   const style = {
@@ -23,8 +22,11 @@ const Fade = ({ children, in: open }) => {
 const Index = ({ open, handleClose, item }) => {
   console.log(item, "item");
   const initialValues = {
-    name: item?.name || "",
-    price: item?.price || "",
+    amount: item?.amount || 1,
+    client_id: item?.client_id || "",
+    id: item?.id || "",
+    service_id: item?.service_id || "",
+    status: item?.status || "in_process",
   };
 
   const handleSubmit = async (values, { setSubmitting }) => {
@@ -32,16 +34,16 @@ const Index = ({ open, handleClose, item }) => {
       let response;
       if (item) {
         const payload = { id: item.id, ...values };
-        response = await service.update(payload);
+        response = await order.update(payload);
       } else {
-        response = await service.create(values);
+        response = await order.create(values);
       }
 
       if (response.status === 200 || response.status === 201) {
         window.location.reload();
         handleClose();
       } else {
-        console.error("Failed to save service:", response.data);
+        console.error("Failed to save order:", response.data);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -75,46 +77,64 @@ const Index = ({ open, handleClose, item }) => {
           }}
         >
           <Typography variant="h5" sx={{ my: 2, textAlign: "center" }}>
-            Create Service
+            Edit Order
           </Typography>
           <Formik
             initialValues={initialValues}
             onSubmit={handleSubmit}
-            validationSchema={serviceValidationSchema}
+            validationSchema={orderValidationSchema}
           >
             {({ isSubmitting }) => (
               <Form>
                 <Field
-                  name="name"
-                  type="text"
-                  as={TextField}
-                  label="Name"
-                  fullWidth
-                  margin="normal"
-                  variant="outlined"
-                  helperText={
-                    <ErrorMessage
-                      name="name"
-                      component="p"
-                      className="text-[red] text-[15px]"
-                    />
-                  }
-                />
-                <Field
-                  name="price"
+                  name="amount"
                   type="number"
                   as={TextField}
-                  label="Price"
+                  label="Amount"
                   fullWidth
                   margin="normal"
                   variant="outlined"
-                  helperText={
-                    <ErrorMessage
-                      name="price"
-                      component="p"
-                      className="text-[red] text-[15px]"
-                    />
-                  }
+                  helperText={<ErrorMessage name="amount" />}
+                />
+                <Field
+                  name="client_id"
+                  type="text"
+                  as={TextField}
+                  label="Client ID"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  helperText={<ErrorMessage name="client_id" />}
+                />
+                <Field
+                  name="id"
+                  type="text"
+                  as={TextField}
+                  label="Order ID"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  helperText={<ErrorMessage name="id" />}
+                />
+                <Field
+                  name="service_id"
+                  type="text"
+                  as={TextField}
+                  label="Service ID"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  helperText={<ErrorMessage name="service_id" />}
+                />
+                <Field
+                  name="status"
+                  type="text"
+                  as={TextField}
+                  label="Status"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  helperText={<ErrorMessage name="status" />}
                 />
 
                 <Button
@@ -125,7 +145,7 @@ const Index = ({ open, handleClose, item }) => {
                   disabled={isSubmitting}
                   sx={{ marginBottom: "8px" }}
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? "Updating..." : "Update"}
                 </Button>
               </Form>
             )}
